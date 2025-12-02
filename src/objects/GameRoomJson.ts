@@ -105,3 +105,5 @@ export class GameRoomJson extends DurableObject {
                 socket.send(payload);
             }
         }
+    }
+}
