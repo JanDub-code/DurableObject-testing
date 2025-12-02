@@ -1,0 +1,15 @@
+name = "cf-turn-based-game"
+main = "src/index.ts"
+compatibility_date = "2024-02-08"
+
+[[durable_objects.bindings]]
+name = "GAME_ROOM_JSON"
+class_name = "GameRoomJson"
+
+[[durable_objects.bindings]]
+name = "GAME_ROOM_BINARY"
+class_name = "GameRoomBinary"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["GameRoomJson", "GameRoomBinary"]
