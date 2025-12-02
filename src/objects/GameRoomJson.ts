@@ -5,6 +5,7 @@ export class GameRoomJson extends DurableObject {
     state: GameState;
     sockets: WebSocket[] = [];
     private lastStorageWrite = 0;
+    private lastBroadcast = 0;
 
     constructor(ctx: DurableObjectState, env: any) {
         super(ctx, env);
@@ -66,8 +67,9 @@ export class GameRoomJson extends DurableObject {
                 status: 'active'
             };
             console.log(`[JSON] Player ${playerId} joined game.`);
-            // Write immediately for JOINs
+            // Broadcast immediately for JOINs
             this.broadcastState();
+            this.lastBroadcast = Date.now();
             this.lastStorageWrite = Date.now();
             this.ctx.storage.put("state", JSON.stringify(this.state));
         } else if (action.type === 'MOVE') {
@@ -76,9 +78,13 @@ export class GameRoomJson extends DurableObject {
                 player.x = action.payload.x;
                 player.y = action.payload.y;
             }
-            // Broadcast but batch storage writes every 500ms
-            this.broadcastState();
+            // Throttle broadcasts to every 200ms (not every move)
             const now = Date.now();
+            if (now - this.lastBroadcast > 200) {
+                this.broadcastState();
+                this.lastBroadcast = now;
+            }
+            // Batch storage writes every 500ms
             if (now - this.lastStorageWrite > 500) {
                 this.lastStorageWrite = now;
                 this.ctx.storage.put("state", JSON.stringify(this.state));
