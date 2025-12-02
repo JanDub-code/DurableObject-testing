@@ -12,4 +12,4 @@ class_name = "GameRoomBinary"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["GameRoomJson", "GameRoomBinary"]
+new_sqlite_classes = ["GameRoomJson", "GameRoomBinary"]
