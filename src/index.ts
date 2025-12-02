@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { serveStatic } from "hono/cloudflare-workers";
 
 type Bindings = {
     GAME_ROOM_JSON: DurableObjectNamespace;
@@ -6,6 +7,9 @@ type Bindings = {
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
+
+// Serve static files (HTML, CSS, JS)
+app.use("/", serveStatic({ path: "./index.html" }));
 
 app.get("/json/:roomId", (c) => {
     const roomId = c.req.param("roomId");
