@@ -38,16 +38,30 @@ export class GameRoomBinary extends DurableObject {
 
             server.addEventListener("message", (event) => {
                 try {
-                    const action = decode(new Uint8Array(event.data as ArrayBuffer)) as GameAction;
+                    let data: Uint8Array;
+                    if (event.data instanceof ArrayBuffer) {
+                        data = new Uint8Array(event.data);
+                    } else if (event.data instanceof Uint8Array) {
+                        data = event.data;
+                    } else {
+                        console.error("[BINARY] Unexpected data type:", typeof event.data);
+                        return;
+                    }
+                    const action = decode(data) as GameAction;
                     this.handleAction(server, action);
                 } catch (e) {
-                    console.error("Invalid MsgPack", e);
+                    console.error("[BINARY] Invalid MsgPack:", e);
                 }
             });
 
             server.addEventListener('close', () => {
                 this.sockets = this.sockets.filter(s => s !== server);
                 console.log(`[BINARY] Client left. Total: ${this.sockets.length}`);
+            });
+
+            server.addEventListener('error', (e) => {
+                console.error(`[BINARY] WebSocket error:`, e);
+                this.sockets = this.sockets.filter(s => s !== server);
             });
 
             return new Response(null, { status: 101, webSocket: client });
@@ -71,7 +85,8 @@ export class GameRoomBinary extends DurableObject {
             this.broadcastState();
             this.lastBroadcast = Date.now();
             this.lastStorageWrite = Date.now();
-            this.ctx.storage.put("state", encode(this.state));
+            const encoded = encode(this.state);
+            this.ctx.storage.put("state", new Uint8Array(encoded));
         } else if (action.type === 'MOVE') {
             const player = this.state.players[action.payload.id];
             if (player) {
@@ -87,7 +102,8 @@ export class GameRoomBinary extends DurableObject {
             // Batch storage writes every 500ms
             if (now - this.lastStorageWrite > 500) {
                 this.lastStorageWrite = now;
-                this.ctx.storage.put("state", encode(this.state));
+                const encoded = encode(this.state);
+                this.ctx.storage.put("state", new Uint8Array(encoded));
             }
         }
     }

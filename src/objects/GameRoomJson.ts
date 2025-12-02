@@ -37,7 +37,6 @@ export class GameRoomJson extends DurableObject {
             server.addEventListener("message", (event) => {
                 try {
                     const action = JSON.parse(event.data as string) as GameAction;
-                    // console.log('[JSON] Received action:', action.type); // Too noisy for benchmark
                     this.handleAction(server, action);
                 } catch (e) {
                     console.error("[JSON] Error parsing message:", e);
@@ -47,6 +46,11 @@ export class GameRoomJson extends DurableObject {
             server.addEventListener('close', () => {
                 this.sockets = this.sockets.filter(s => s !== server);
                 console.log(`[JSON] Client left. Total: ${this.sockets.length}`);
+            });
+
+            server.addEventListener('error', (e) => {
+                console.error(`[JSON] WebSocket error:`, e);
+                this.sockets = this.sockets.filter(s => s !== server);
             });
 
             return new Response(null, { status: 101, webSocket: client });
