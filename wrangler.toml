@@ -1,4 +1,4 @@
-name = "cf-turn-based-game"
+name = "durableobjects-testing"
 main = "src/index.ts"
 compatibility_date = "2024-02-08"
 
