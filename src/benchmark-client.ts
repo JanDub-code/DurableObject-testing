@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { encode, decode } from '@msgpack/msgpack';
 
 const CLIENTS_PER_ROOM = 10;
-const MOVES_PER_CLIENT = 50;
+const MOVES_PER_CLIENT = 20;
 const ROOM_ID_JSON = "bench-room-json";
 const ROOM_ID_BINARY = "bench-room-binary";
 
